@@ -16,6 +16,7 @@ import 'login_screen.dart';
 import 'profile_screen.dart';
 import 'templates/audit_types_screen.dart';
 import 'settings_screen.dart';
+import 'checklist/checklist_templates_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -344,6 +345,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     currentUserId: _authService.currentUser?.id ?? '',
                     currentUserName: _name,
                   )),
+                ),
+                _drawerItem(
+                  icon: Icons.checklist_rounded,
+                  title: 'Checklist',
+                  onTap: () => _navigate(const ChecklistTemplatesScreen()),
                 ),
                 _drawerItem(
                   icon: Icons.assignment_late_outlined,
