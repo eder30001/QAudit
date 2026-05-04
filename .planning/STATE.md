@@ -42,12 +42,12 @@ See: .planning/PROJECT.md (updated 2026-05-02)
 ## Current Position
 
 Phase: 13 — DB Foundation + Template Management
-Plan: 13-04 (Wave 3b of 4) — CONCLUÍDO
-Plan: 13-03 (Wave 3a of 4) — próximo (ChecklistTemplatesScreen + drawer entry)
-Status: Executing — Plan 13-04 completo; pronto para Plan 13-03
-Last activity: 2026-05-04 — Plan 13-04 concluído (commit 2d6d899); ChecklistTemplateFormScreen
+Plan: 13-03 (Wave 3a of 4) — CONCLUÍDO (commits f222262, 21535d8)
+Plan: 13-04 (Wave 3b of 4) — CONCLUÍDO (commit 2d6d899)
+Status: Phase 13 COMPLETA — todos os 4 planos entregues; pronto para Phase 14
+Last activity: 2026-05-04 — Plan 13-03 concluído; ChecklistTemplatesScreen + drawer entry NAV-01
 
-Progress: [----------] 10% (0/5 phases complete; Phase 13 Plans 1-2-4/4 concluídos)
+Progress: [##--------] 20% (1/5 phases complete; Phase 13 ALL 4/4 planos concluídos)
 
 ## Accumulated Context
 
@@ -82,6 +82,12 @@ Progress: [----------] 10% (0/5 phases complete; Phase 13 Plans 1-2-4/4 concluí
 - checklist_template.dart sem imports (pure Dart) — sem Color/IconData em Phase 13
 - getByCategory usa apenas .eq('category') — RLS já filtra seeds + own via policy
 - replaceItems = delete-all + re-insert com order_index 0..n-1 via asMap().entries (Pitfall 5 resolvido)
+
+### Decisions (v1.2 — Plan 13-03)
+
+- ChecklistTemplatesScreen sem AppRole guard — visível a todos os perfis autenticados (NAV-01)
+- ScaffoldMessenger capturado antes do await no _CloneBottomSheet (use_build_context_synchronously compliance)
+- _ChecklistTemplateCard como StatelessWidget com callbacks — estado de lista vive no parent screen
 
 ### Decisions (v1.2 — Plan 13-04)
 

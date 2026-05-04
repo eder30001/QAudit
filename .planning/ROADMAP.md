@@ -64,7 +64,7 @@ Archive: [.planning/milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
 Plans:
 - [x] 13-01-PLAN.md — DB migration: tables, RLS policies, 10 seed templates (commit 53a1fbf; aguarda supabase db push)
 - [x] 13-02-PLAN.md — Dart model + service layer + unit tests (commits f2877b0, 0ae316c)
-- [ ] 13-03-PLAN.md — ChecklistTemplatesScreen (3-tab list, cards, clone, delete) + drawer entry
+- [x] 13-03-PLAN.md — ChecklistTemplatesScreen (3-tab list, cards, clone, delete) + drawer entry (commits f222262, 21535d8)
 - [x] 13-04-PLAN.md — ChecklistTemplateFormScreen (create/edit form with items list) (commit 2d6d899)
 
 ### Phase 14: Checklist Execution Engine
@@ -130,7 +130,7 @@ Plans:
 | 10. Reports (Calendar) | v1.1 | 3/3 | Complete | 2026-05-02 |
 | 11. Notifications | v1.1 | 0/? | Deferred | — |
 | 12. Navigation Refactor | v1.1 | 0/? | Cancelled | 2026-05-02 |
-| 13. DB Foundation + Template Management | v1.2 | 3/4 | In progress | — |
+| 13. DB Foundation + Template Management | v1.2 | 4/4 | Complete | 2026-05-04 |
 | 14. Checklist Execution Engine | v1.2 | 0/? | Not started | — |
 | 15. Photos per Item | v1.2 | 0/? | Not started | — |
 | 16. Digital Signature | v1.2 | 0/? | Not started | — |
