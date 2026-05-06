@@ -52,6 +52,7 @@ class ChecklistTemplateItem {
   final String description;
   final String itemType; // 'yes_no' | 'text' | 'number' | 'date' | 'multiple_choice' | 'photo'
   final int orderIndex;
+  final List<String> options; // Opções para item_type == 'multiple_choice'; [] para outros tipos
 
   ChecklistTemplateItem({
     required this.id,
@@ -59,6 +60,7 @@ class ChecklistTemplateItem {
     required this.description,
     required this.itemType,
     required this.orderIndex,
+    this.options = const [],
   });
 
   factory ChecklistTemplateItem.fromMap(Map<String, dynamic> map) {
@@ -68,6 +70,7 @@ class ChecklistTemplateItem {
       description: map['description'] ?? '',
       itemType: map['item_type'] ?? 'yes_no',
       orderIndex: map['order_index'] ?? 0,
+      options: (map['options'] as List?)?.cast<String>() ?? [],
     );
   }
 }
