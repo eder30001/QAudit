@@ -11,6 +11,7 @@ class ChecklistExecution {
   final String responsavel;
   final String local;
   final String? numero;
+  final String? veiculoPlaca; // Preenchido para empresas do segmento transportador
   final DateTime dataExecucao; // DATE — sem timezone (não usar .toLocal())
   final String status; // 'rascunho' | 'concluido'
   final double? conformityPercent;
@@ -26,6 +27,7 @@ class ChecklistExecution {
     required this.responsavel,
     required this.local,
     this.numero,
+    this.veiculoPlaca,
     required this.dataExecucao,
     required this.status,
     this.conformityPercent,
@@ -43,6 +45,7 @@ class ChecklistExecution {
       responsavel: map['responsavel'] ?? '',
       local: map['local'] ?? '',
       numero: map['numero'],
+      veiculoPlaca: map['veiculo_placa'],
       // DATE column — NÃO usar .toLocal() (pitfall de timezone UTC-3)
       dataExecucao: DateTime.parse(map['data_execucao']),
       status: map['status'] ?? 'rascunho',

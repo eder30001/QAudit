@@ -472,6 +472,14 @@ class _ExecutionCard extends StatelessWidget {
                       color: t.textSecondary,
                     ),
                   ],
+                  if (e.veiculoPlaca != null) ...[
+                    const SizedBox(width: 16),
+                    _InfoRow(
+                      icon: Icons.directions_car_outlined,
+                      text: e.veiculoPlaca!,
+                      color: t.textSecondary,
+                    ),
+                  ],
                 ],
               ),
               // Conformidade (apenas para concluídos)
@@ -592,12 +600,19 @@ class _NewChecklistSheetState extends State<_NewChecklistSheet> {
   final _responsavelCtrl = TextEditingController();
   final _localCtrl = TextEditingController();
   final _numeroCtrl = TextEditingController();
+  final _placaCtrl = TextEditingController();
 
   List<ChecklistTemplate> _templates = [];
   ChecklistTemplate? _selectedTemplate;
   DateTime _dataExecucao = DateTime.now();
   bool _loadingTemplates = true;
   bool _isLoading = false;
+
+  bool get _showPlaca {
+    final segment = CompanyContextService.instance.activeCompanySegment;
+    final templateCategory = _selectedTemplate?.category ?? '';
+    return segment == 'transportador' || templateCategory == 'transportadora';
+  }
 
   @override
   void initState() {
@@ -610,6 +625,7 @@ class _NewChecklistSheetState extends State<_NewChecklistSheet> {
     _responsavelCtrl.dispose();
     _localCtrl.dispose();
     _numeroCtrl.dispose();
+    _placaCtrl.dispose();
     super.dispose();
   }
 
@@ -657,6 +673,9 @@ class _NewChecklistSheetState extends State<_NewChecklistSheet> {
         companyId: companyId,
         responsavel: _responsavelCtrl.text.trim(),
         local: _localCtrl.text.trim(),
+        veiculoPlaca: _showPlaca && _placaCtrl.text.trim().isNotEmpty
+            ? _placaCtrl.text.trim().toUpperCase()
+            : null,
         numero: _numeroCtrl.text.trim().isEmpty ? null : _numeroCtrl.text.trim(),
         dataExecucao: _dataExecucao,
       );
@@ -718,7 +737,10 @@ class _NewChecklistSheetState extends State<_NewChecklistSheet> {
                       value: tpl,
                       child: Text(tpl.name, overflow: TextOverflow.ellipsis),
                     )).toList(),
-                    onChanged: (v) => setState(() => _selectedTemplate = v),
+                    onChanged: (v) => setState(() {
+                      _selectedTemplate = v;
+                      _placaCtrl.clear(); // limpa placa ao mudar template
+                    }),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: t.background,
@@ -765,6 +787,18 @@ class _NewChecklistSheetState extends State<_NewChecklistSheet> {
                     decoration: const InputDecoration(
                         labelText: 'Número/código (opcional)'),
                   ),
+                  if (_showPlaca) ...[
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _placaCtrl,
+                      textCapitalization: TextCapitalization.characters,
+                      decoration: const InputDecoration(
+                        labelText: 'Placa do veículo',
+                        hintText: 'Ex: ABC-1234',
+                        prefixIcon: Icon(Icons.directions_car_outlined),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

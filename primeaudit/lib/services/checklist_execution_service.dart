@@ -37,6 +37,7 @@ class ChecklistExecutionService {
     required String responsavel,
     required String local,
     String? numero,
+    String? veiculoPlaca,
     required DateTime dataExecucao,
   }) async {
     final userId = _client.auth.currentUser!.id;
@@ -49,6 +50,7 @@ class ChecklistExecutionService {
           'responsavel': responsavel,
           'local': local,
           'numero': numero,
+          'veiculo_placa': veiculoPlaca,
           // DATE sem timezone: toIso8601String().substring(0, 10) = 'yyyy-MM-dd'
           'data_execucao': dataExecucao.toIso8601String().substring(0, 10),
           'status': 'rascunho',

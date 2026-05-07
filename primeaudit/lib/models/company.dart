@@ -10,7 +10,9 @@ class Company {
   final String? phone;
   final String? address;
   final bool active;
-  final bool requiresPerimeter; // Se true, auditorias exigem seleção de perímetro
+  final bool requiresPerimeter;
+  final String segment; // 'industrial' | 'transportador' | 'construcao' | 'alimenticio' | 'logistica' | 'outro'
+  final List<String> modules; // ['auditoria', 'checklist']
   final DateTime createdAt;
 
   Company({
@@ -22,6 +24,8 @@ class Company {
     this.address,
     required this.active,
     required this.requiresPerimeter,
+    required this.segment,
+    required this.modules,
     required this.createdAt,
   });
 
@@ -35,9 +39,13 @@ class Company {
       address: map['address'],
       active: map['active'] ?? true,
       requiresPerimeter: map['requires_perimeter'] ?? false,
+      segment: map['segment'] ?? 'industrial',
+      modules: (map['modules'] as List?)?.cast<String>() ?? ['auditoria', 'checklist'],
       createdAt: DateTime.parse(map['created_at']),
     );
   }
+
+  bool hasModule(String module) => modules.contains(module);
 
   Map<String, dynamic> toMap() {
     return {
@@ -48,6 +56,8 @@ class Company {
       'address': address,
       'active': active,
       'requires_perimeter': requiresPerimeter,
+      'segment': segment,
+      'modules': modules,
     };
   }
 }

@@ -5,7 +5,9 @@ import '../core/app_theme.dart';
 import '../models/audit.dart';
 import '../services/audit_service.dart';
 import '../services/auth_service.dart';
+import '../models/company.dart';
 import '../services/company_context_service.dart';
+import '../services/company_service.dart';
 import '../services/dashboard_service.dart';
 import '../services/user_service.dart';
 import 'admin/admin_screen.dart';
@@ -28,6 +30,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _authService = AuthService();
   final _userService = UserService();
+  final _companyService = CompanyService();
   final _auditService = AuditService();
   final _dashboardService = DashboardService();
   final _correctiveActionService = CorrectiveActionService();
@@ -59,10 +62,20 @@ class _HomeScreenState extends State<HomeScreen> {
       final user = _authService.currentUser;
       if (user == null) return;
       final profile = await _userService.getById(user.id);
+      // Carregar dados da empresa para segment/modules (não-superuser)
+      Company? company;
+      if (profile.companyId != null && !AppRole.isSuperOrDev(profile.role)) {
+        try {
+          final companies = await _companyService.getAll();
+          company = companies.where((c) => c.id == profile.companyId).firstOrNull;
+        } catch (_) {}
+      }
       await CompanyContextService.instance.init(
         role: profile.role,
         profileCompanyId: profile.companyId,
         profileCompanyName: profile.companyName,
+        profileCompanySegment: company?.segment ?? 'industrial',
+        profileCompanyModules: company?.modules ?? ['auditoria', 'checklist'],
       );
       if (mounted) {
         setState(() {
@@ -338,21 +351,23 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: 'Templates de Auditoria',
                     onTap: () => _navigate(const AuditTypesScreen()),
                   ),
-                _drawerItem(
-                  icon: Icons.playlist_add_check_rounded,
-                  title: 'Auditorias',
-                  onTap: () => _navigate(AuditsScreen(
-                    currentUserId: _authService.currentUser?.id ?? '',
-                    currentUserName: _name,
-                  )),
-                ),
-                _drawerItem(
-                  icon: Icons.checklist_rounded,
-                  title: 'Checklist',
-                  onTap: () => _navigate(ChecklistsScreen(
-                    currentUserId: _authService.currentUser?.id ?? '',
-                  )),
-                ),
+                if (CompanyContextService.instance.hasModule('auditoria'))
+                  _drawerItem(
+                    icon: Icons.playlist_add_check_rounded,
+                    title: 'Auditorias',
+                    onTap: () => _navigate(AuditsScreen(
+                      currentUserId: _authService.currentUser?.id ?? '',
+                      currentUserName: _name,
+                    )),
+                  ),
+                if (CompanyContextService.instance.hasModule('checklist'))
+                  _drawerItem(
+                    icon: Icons.checklist_rounded,
+                    title: 'Checklist',
+                    onTap: () => _navigate(ChecklistsScreen(
+                      currentUserId: _authService.currentUser?.id ?? '',
+                    )),
+                  ),
                 _drawerItem(
                   icon: Icons.assignment_late_outlined,
                   title: 'Ações Corretivas',

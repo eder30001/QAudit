@@ -5,6 +5,22 @@ import '../../core/cnpj_validator.dart';
 import '../../models/company.dart';
 import '../../services/company_service.dart';
 
+// Segmentos disponíveis
+const _segments = [
+  ('industrial',    'Industrial',    Icons.factory_outlined),
+  ('transportador', 'Transportador', Icons.local_shipping_outlined),
+  ('construcao',    'Construção',    Icons.construction_outlined),
+  ('alimenticio',   'Alimentício',   Icons.restaurant_outlined),
+  ('logistica',     'Logística',     Icons.inventory_2_outlined),
+  ('outro',         'Outro',         Icons.category_outlined),
+];
+
+// Módulos disponíveis
+const _allModules = [
+  ('auditoria',  'Auditoria',  Icons.playlist_add_check_rounded),
+  ('checklist',  'Checklist',  Icons.checklist_rounded),
+];
+
 class CompanyForm extends StatefulWidget {
   final Company? company;
 
@@ -26,6 +42,8 @@ class _CompanyFormState extends State<CompanyForm> {
 
   bool _isLoading = false;
   bool _active = true;
+  String _segment = 'industrial';
+  List<String> _modules = ['auditoria', 'checklist'];
 
   bool get _isEditing => widget.company != null;
 
@@ -39,6 +57,8 @@ class _CompanyFormState extends State<CompanyForm> {
     _phoneController = TextEditingController(text: c?.phone ?? '');
     _addressController = TextEditingController(text: c?.address ?? '');
     _active = c?.active ?? true;
+    _segment = c?.segment ?? 'industrial';
+    _modules = List<String>.from(c?.modules ?? ['auditoria', 'checklist']);
   }
 
   @override
@@ -53,6 +73,13 @@ class _CompanyFormState extends State<CompanyForm> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_modules.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Selecione ao menos um módulo.'),
+        behavior: SnackBarBehavior.floating,
+      ));
+      return;
+    }
     setState(() => _isLoading = true);
 
     try {
@@ -71,6 +98,8 @@ class _CompanyFormState extends State<CompanyForm> {
             ? null
             : _addressController.text.trim(),
         'active': _active,
+        'segment': _segment,
+        'modules': _modules,
       };
 
       if (_isEditing) {
@@ -97,8 +126,9 @@ class _CompanyFormState extends State<CompanyForm> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppTheme.of(context);
     return Scaffold(
-      backgroundColor: AppTheme.of(context).background,
+      backgroundColor: t.background,
       appBar: AppBar(
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
@@ -128,6 +158,7 @@ class _CompanyFormState extends State<CompanyForm> {
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
+            // ── Dados básicos ───────────────────────────────────────────────
             _buildField(
               controller: _nameController,
               label: 'Nome da empresa *',
@@ -164,30 +195,134 @@ class _CompanyFormState extends State<CompanyForm> {
               icon: Icons.location_on_outlined,
               maxLines: 2,
             ),
-            const SizedBox(height: 20),
-            if (_isEditing)
+
+            // ── Segmento ────────────────────────────────────────────────────
+            const SizedBox(height: 24),
+            _sectionLabel(t, 'Segmento', Icons.category_outlined),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _segments.map((seg) {
+                final selected = _segment == seg.$1;
+                return ChoiceChip(
+                  label: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(seg.$3, size: 16,
+                          color: selected ? Colors.white : t.textSecondary),
+                      const SizedBox(width: 6),
+                      Text(seg.$2),
+                    ],
+                  ),
+                  selected: selected,
+                  onSelected: (_) => setState(() => _segment = seg.$1),
+                  selectedColor: AppColors.primary,
+                  backgroundColor: t.surface,
+                  labelStyle: TextStyle(
+                    color: selected ? Colors.white : t.textPrimary,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                    fontSize: 13,
+                  ),
+                  side: BorderSide(
+                      color: selected ? AppColors.primary : t.divider),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                );
+              }).toList(),
+            ),
+
+            // ── Módulos contratados ─────────────────────────────────────────
+            const SizedBox(height: 24),
+            _sectionLabel(t, 'Módulos contratados', Icons.extension_outlined),
+            const SizedBox(height: 4),
+            Text(
+              'Selecione os módulos disponíveis para esta empresa.',
+              style: TextStyle(fontSize: 12, color: t.textSecondary),
+            ),
+            const SizedBox(height: 10),
+            ..._allModules.map((mod) {
+              final enabled = _modules.contains(mod.$1);
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: t.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: enabled ? AppColors.primary : t.divider,
+                    width: enabled ? 1.5 : 1,
+                  ),
+                ),
+                child: CheckboxListTile(
+                  value: enabled,
+                  activeColor: AppColors.primary,
+                  title: Row(
+                    children: [
+                      Icon(mod.$3, size: 20,
+                          color: enabled ? AppColors.primary : t.textSecondary),
+                      const SizedBox(width: 10),
+                      Text(mod.$2,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w500, fontSize: 15)),
+                    ],
+                  ),
+                  onChanged: (v) => setState(() {
+                    if (v == true) {
+                      _modules.add(mod.$1);
+                    } else {
+                      _modules.remove(mod.$1);
+                    }
+                  }),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+              );
+            }),
+
+            // ── Status ──────────────────────────────────────────────────────
+            if (_isEditing) ...[
+              const SizedBox(height: 20),
               Container(
                 decoration: BoxDecoration(
-                  color: AppTheme.of(context).surface,
+                  color: t.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.of(context).divider),
+                  border: Border.all(color: t.divider),
                 ),
                 child: SwitchListTile(
                   title: const Text('Empresa ativa',
                       style: TextStyle(fontWeight: FontWeight.w500)),
                   subtitle: Text(
                     _active ? 'Visível no sistema' : 'Desativada',
-                    style: TextStyle(
-                        color: AppTheme.of(context).textSecondary, fontSize: 12),
+                    style: TextStyle(color: t.textSecondary, fontSize: 12),
                   ),
                   value: _active,
-                  activeThumbColor: AppColors.primary,
+                  activeColor: AppColors.primary,
                   onChanged: (v) => setState(() => _active = v),
                 ),
               ),
+            ],
+            const SizedBox(height: 32),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _sectionLabel(AppTheme t, String label, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: AppColors.primary),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: t.textPrimary,
+          ),
+        ),
+      ],
     );
   }
 
@@ -199,6 +334,7 @@ class _CompanyFormState extends State<CompanyForm> {
     int maxLines = 1,
     String? Function(String?)? validator,
   }) {
+    final t = AppTheme.of(context);
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
@@ -207,13 +343,13 @@ class _CompanyFormState extends State<CompanyForm> {
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: AppTheme.of(context).textSecondary, size: 20),
+        prefixIcon: Icon(icon, color: t.textSecondary, size: 20),
         filled: true,
-        fillColor: AppTheme.of(context).surface,
+        fillColor: t.surface,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppTheme.of(context).divider)),
+            borderSide: BorderSide(color: t.divider)),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppTheme.of(context).divider)),
+            borderSide: BorderSide(color: t.divider)),
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: AppColors.accent, width: 2)),
         errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
