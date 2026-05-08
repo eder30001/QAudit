@@ -216,7 +216,9 @@ class _ChecklistExecutionScreenState extends State<ChecklistExecutionScreen> {
           );
         }
       });
-    } catch (e) {
+    } catch (e, st) {
+      // ignore: avoid_print
+      print('[ChecklistPhoto] upload error: $e\n$st');
       if (!mounted) return;
       setState(() {
         final photos = _photosPerItem[itemId]!;
