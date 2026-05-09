@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Paleta de cores estática do PrimeAudit.
+/// Paleta de cores estática do QAudit.
 /// Usado em conjunto com [AppTheme] para temas claro/escuro.
 class AppColors {
   static const Color primary = Color(0xFF1E3A5F);       // Azul corporativo principal

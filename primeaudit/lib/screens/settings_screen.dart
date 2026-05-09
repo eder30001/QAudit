@@ -328,7 +328,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       icon: Icons.info_outline_rounded,
       child: _infoTile(
         icon: Icons.assignment_turned_in_rounded,
-        title: 'PrimeAudit',
+        title: 'QAudit',
         value: 'Versão 1.0.0',
       ),
     );

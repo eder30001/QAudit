@@ -152,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 20),
         const Text(
-          'PrimeAudit',
+          'QAudit',
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
@@ -344,7 +344,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildFooter() {
     return Text(
-      '© 2025 PrimeAudit',
+      '© 2026 QAudit',
       style: TextStyle(
         fontSize: 12,
         color: AppTheme.of(context).textSecondary,

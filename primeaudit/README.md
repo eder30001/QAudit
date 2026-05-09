@@ -1,6 +1,6 @@
-# primeaudit
+# QAudit
 
-A new Flutter project.
+Aplicativo Flutter de auditorias industriais em campo.
 
 ## Getting Started
 

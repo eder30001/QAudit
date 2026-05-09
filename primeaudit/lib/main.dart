@@ -22,7 +22,7 @@ Future<void> main() async {
   final saved = prefs.getString('settings_theme') ?? 'system';
   appThemeMode.value = themeFromString(saved);
 
-  runApp(const PrimeAuditApp());
+  runApp(const QAuditApp());
 }
 
 ThemeMode themeFromString(String value) {
@@ -36,15 +36,15 @@ ThemeMode themeFromString(String value) {
   }
 }
 
-class PrimeAuditApp extends StatelessWidget {
-  const PrimeAuditApp({super.key});
+class QAuditApp extends StatelessWidget {
+  const QAuditApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: appThemeMode,
       builder: (_, mode, _) => MaterialApp(
-        title: 'PrimeAudit',
+        title: 'QAudit',
         debugShowCheckedModeBanner: false,
         themeMode: mode,
         theme: ThemeData(

@@ -1,7 +1,7 @@
 <!-- GSD:project-start source:PROJECT.md -->
 ## Project
 
-**PrimeAudit**
+**QAudit**
 
 App Flutter para realização de auditorias industriais em campo. Auditores executam checklists configuráveis por template, registrando respostas por item com cálculo automático de conformidade ponderada. O backend é Supabase (auth, banco, RLS) e o app suporta múltiplas empresas com RBAC por perfil.
 
@@ -193,7 +193,7 @@ App Flutter para realização de auditorias industriais em campo. Auditores exec
 ## Entry Points
 - Location: `primeaudit/lib/main.dart`
 - Triggers: Flutter engine startup
-- Responsibilities: Supabase init, theme restore from `SharedPreferences`, run `PrimeAuditApp`
+- Responsibilities: Supabase init, theme restore from `SharedPreferences`, run `QAuditApp`
 - Location: `_AuthGate` class in `primeaudit/lib/main.dart`
 - Triggers: Supabase auth state stream
 - Responsibilities: Route to `HomeScreen` or `LoginScreen` based on session
