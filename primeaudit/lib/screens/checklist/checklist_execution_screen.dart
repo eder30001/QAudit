@@ -55,7 +55,11 @@ class _ChecklistExecutionScreenState extends State<ChecklistExecutionScreen> {
   // Controle de retry em andamento por item (evita loops duplos)
   final Set<String> _retrying = {};
 
+  // true somente enquanto a carga inicial (sem dados na tela ainda) está em andamento.
+  // Recargas subsequentes (pull-to-refresh, retry) NÃO devem mostrar spinner full-screen
+  // nem substituir o corpo por error — isso apagaria respostas já preenchidas na tela.
   bool _loading = true;
+  bool _initialLoadDone = false;
   bool _finalizing = false;
   String? _error;
 
@@ -65,13 +69,29 @@ class _ChecklistExecutionScreenState extends State<ChecklistExecutionScreen> {
     _load();
   }
 
-  // ── Carga inicial ─────────────────────────────────────────────────────────
+  // ── Carga inicial e recarga silenciosa ────────────────────────────────────
+  //
+  // CORE VALUE: nunca apagar respostas já visíveis em tela por causa de uma
+  // recarga com falha de rede.
+  //
+  // Comportamento:
+  //   - Primeira chamada (_initialLoadDone == false): spinner + error screen se falhar.
+  //   - Chamadas subsequentes (_initialLoadDone == true): silenciosa — snackbar se
+  //     falhar, conteúdo existente permanece na tela.
+  //
+  // Merge de fotos:
+  //   - Entradas com image != null vêm do banco (confirmadas).
+  //   - Entradas com image == null são locais (uploading/error) e devem ser
+  //     preservadas mesmo durante uma recarga — elas não aparecem no banco ainda.
 
   Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+    final isInitialLoad = !_initialLoadDone;
+    if (isInitialLoad) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
     try {
       final templateId = widget.execution.templateId;
 
@@ -123,17 +143,50 @@ class _ChecklistExecutionScreenState extends State<ChecklistExecutionScreen> {
         photosMap.putIfAbsent(img.itemId, () => []).add(entry);
       }
 
+      // Preservar entradas de foto rastreadas localmente (uploading/error) que ainda
+      // não chegaram ao banco (image == null). O addAll simples sobrescreveria a lista
+      // inteira por itemId, descartando essas entradas locais.
+      for (final entry in _photosPerItem.entries) {
+        final localOnly = entry.value.where((p) => p.image == null).toList();
+        if (localOnly.isNotEmpty) {
+          // Entradas do banco primeiro, pendentes locais ao final.
+          photosMap.putIfAbsent(entry.key, () => []).addAll(localOnly);
+        }
+      }
+
       if (mounted) {
         setState(() {
           _allItems = items;
           _answers.addAll(merged);
           _observations.addAll(mergedObs);
-          _photosPerItem.addAll(photosMap);
+          _photosPerItem
+            ..clear()
+            ..addAll(photosMap);
           _loading = false;
+          _initialLoadDone = true;
+          _error = null;
         });
       }
     } catch (e) {
-      if (mounted) setState(() { _error = '$e'; _loading = false; });
+      if (!mounted) return;
+      if (isInitialLoad) {
+        // Sem dados na tela ainda — mostrar error screen com botão de retry.
+        setState(() { _error = '$e'; _loading = false; });
+      } else {
+        // Dados já visíveis — manter conteúdo e avisar via snackbar.
+        // Não alterar _loading nem _error para não apagar respostas da tela.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Falha ao recarregar: $e'),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 5),
+            action: SnackBarAction(
+              label: 'Tentar novamente',
+              onPressed: _load,
+            ),
+          ),
+        );
+      }
     }
   }
 
@@ -221,10 +274,12 @@ class _ChecklistExecutionScreenState extends State<ChecklistExecutionScreen> {
       print('[ChecklistPhoto] upload error: $e\n$st');
       if (!mounted) return;
       setState(() {
-        final photos = _photosPerItem[itemId]!;
-        final i = photos.indexWhere((p) => p.key == key);
-        if (i >= 0) {
-          photos[i] = photos[i].copyWith(state: _ChecklistPhotoState.error);
+        final photos = _photosPerItem[itemId];
+        if (photos != null) {
+          final i = photos.indexWhere((p) => p.key == key);
+          if (i >= 0) {
+            photos[i] = photos[i].copyWith(state: _ChecklistPhotoState.error);
+          }
         }
       });
       messenger.showSnackBar(
