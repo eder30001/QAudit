@@ -1,4 +1,3 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../core/app_roles.dart';
@@ -10,7 +9,6 @@ import '../models/company.dart';
 import '../services/company_context_service.dart';
 import '../services/company_service.dart';
 import '../services/dashboard_service.dart';
-import '../services/sync_service.dart';
 import '../services/user_service.dart';
 import 'admin/admin_screen.dart';
 import 'audits_screen.dart';
@@ -52,25 +50,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Map<String, List<Audit>> _calendarData = {};
   String? _calendarError;
   List<Audit> _allAudits = []; // retained for re-bucketing on month navigation (no extra request)
-  dynamic _connectivitySub; // StreamSubscription — typed as dynamic to avoid import circular
 
   @override
   void initState() {
     super.initState();
     _loadProfile();
-    _connectivitySub = Connectivity().onConnectivityChanged.listen((results) {
-      if (results.any((r) => r != ConnectivityResult.none)) {
-        SyncService.instance
-            .syncAll(CompanyContextService.instance.activeCompanyId)
-            .ignore();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    (_connectivitySub as dynamic)?.cancel();
-    super.dispose();
   }
 
   Future<void> _loadProfile() async {
@@ -100,10 +84,6 @@ class _HomeScreenState extends State<HomeScreen> {
           _email = profile.email;
         });
       }
-      // Sincroniza tudo em background — não bloqueia UI
-      SyncService.instance
-          .syncAll(CompanyContextService.instance.activeCompanyId)
-          .ignore();
       await _loadDashboard(); // chain: _role and CompanyContextService now ready
     } catch (_) {
     } finally {
@@ -119,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final currentUserId = _authService.currentUser?.id ?? '';
 
       // Single fetch — Dart-side filter for auditor scope (D-05/D-06)
-      final all = await _auditService.getAuditsCached(companyId: companyId);
+      final all = await _auditService.getAudits(companyId: companyId);
       final audits = (AppRole.isSuperOrDev(_role) || AppRole.canAccessAdmin(_role))
           ? all
           : all.where((a) => a.auditorId == currentUserId).toList();
@@ -130,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final overdue = audits.where((a) => a.status == AuditStatus.atrasada).length;
 
       // Open actions — aberta + em_andamento + em_avaliacao (Phase 8)
-      final openActions = await _correctiveActionService.getOpenActionsCountCached(companyId);
+      final openActions = await _correctiveActionService.getOpenActionsCount(companyId);
 
       // Companies count — superuser/dev only (D-07: isSuperOrDev, NOT canAccessAdmin)
       int companiesCount = 0;

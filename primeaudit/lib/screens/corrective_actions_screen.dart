@@ -66,7 +66,7 @@ class _CorrectiveActionsScreenState extends State<CorrectiveActionsScreen> {
     });
     try {
       final companyId = CompanyContextService.instance.activeCompanyId;
-      final data = await _service.getActionsCached(
+      final data = await _service.getActions(
         companyId: companyId,
         statusFilter: _statusFilter.dbValue,
         responsibleFilter: _responsibleFilter,

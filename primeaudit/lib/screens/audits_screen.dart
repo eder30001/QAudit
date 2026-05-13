@@ -116,7 +116,7 @@ class _AuditsScreenState extends State<AuditsScreen> {
     setState(() { _isLoading = true; _error = null; });
     try {
       final companyId = CompanyContextService.instance.activeCompanyId;
-      final data = await _auditService.getAuditsCached(companyId: companyId);
+      final data = await _auditService.getAudits(companyId: companyId);
       if (mounted) setState(() => _audits = data);
     } catch (e) {
       if (mounted) setState(() => _error = 'Erro ao carregar auditorias.\n$e');
@@ -879,10 +879,9 @@ class _NewAuditSheetState extends State<_NewAuditSheet> {
     try {
       final companyId = widget.companyId;
       final results = await Future.wait([
-        _templateService.getTypesCached(companyId: companyId),
+        _templateService.getTypes(companyId: companyId),
         companyId != null
-            ? _perimeterService.getByCompanyCached(companyId)
-                .catchError((_) => <Perimeter>[])
+            ? _perimeterService.getByCompany(companyId)
             : Future.value(<Perimeter>[]),
       ]);
 
@@ -903,7 +902,7 @@ class _NewAuditSheetState extends State<_NewAuditSheet> {
   Future<void> _loadTemplates(String typeId) async {
     setState(() { _loadingTemplates = true; _templates = []; _selectedTemplate = null; });
     try {
-      final data = await _templateService.getTemplatesCached(
+      final data = await _templateService.getTemplates(
         typeId: typeId,
         companyId: widget.companyId,
       );

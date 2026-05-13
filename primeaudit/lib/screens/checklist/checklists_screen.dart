@@ -66,7 +66,7 @@ class _ChecklistsScreenState extends State<ChecklistsScreen> {
     setState(() { _isLoading = true; _error = null; });
     try {
       final companyId = CompanyContextService.instance.activeCompanyId;
-      final data = await _executionService.getExecutionsCached(companyId: companyId);
+      final data = await _executionService.getExecutions(companyId: companyId);
       if (mounted) setState(() => _executions = data);
     } catch (e) {
       if (mounted) setState(() => _error = 'Erro ao carregar checklists.\n$e');
@@ -630,7 +630,7 @@ class _NewChecklistSheetState extends State<_NewChecklistSheet> {
 
   Future<void> _loadTemplates() async {
     try {
-      final data = await _templateService.getAllCached();
+      final data = await _templateService.getAll();
       if (mounted) setState(() { _templates = data; _loadingTemplates = false; });
     } catch (_) {
       if (mounted) setState(() => _loadingTemplates = false);

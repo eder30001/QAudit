@@ -1,8 +1,5 @@
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/checklist_execution.dart';
-import 'sync_service.dart';
 
 /// CRUD de execuções de checklist (tabela `checklist_executions`).
 ///
@@ -61,22 +58,6 @@ class ChecklistExecutionService {
         .select(_select)
         .single();
     return ChecklistExecution.fromMap(result);
-  }
-
-  /// Variante com fallback offline usando cache do SyncService.
-  Future<List<ChecklistExecution>> getExecutionsCached({required String? companyId}) async {
-    try {
-      return await getExecutions(companyId: companyId);
-    } catch (_) {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(SyncService.checklistExecutionsKey(companyId));
-      if (raw != null) {
-        return (jsonDecode(raw) as List)
-            .map((e) => ChecklistExecution.fromMap(e as Map<String, dynamic>))
-            .toList();
-      }
-      rethrow;
-    }
   }
 
   /// Lista execuções da empresa ordenadas por created_at DESC.

@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/audit_type.dart';
 import '../models/audit_template.dart';
@@ -11,18 +9,8 @@ import '../models/audit_template.dart';
 ///
 /// Templates e tipos com [companyId] == null são globais; quando [companyId]
 /// é fornecido, o filtro usa OR para incluir globais + os da empresa.
-///
-/// Métodos com sufixo `Cached` persistem o resultado em SharedPreferences e
-/// retornam o cache quando a chamada de rede falha (suporte offline).
 class AuditTemplateService {
   final _client = Supabase.instance.client;
-
-  // ── Chaves de cache ────────────────────────────────
-  static String _typesKey(String? companyId) =>
-      'cache_audit_types_${companyId ?? 'global'}';
-
-  static String _templatesKey(String typeId, String? companyId) =>
-      'cache_audit_templates_${typeId}_${companyId ?? 'global'}';
 
   // ── Tipos ──────────────────────────────────────────
   Future<List<AuditType>> getTypes({String? companyId}) async {
@@ -34,28 +22,6 @@ class AuditTemplateService {
     }
     final data = await query.eq('active', true).order('name');
     return (data as List).map((e) => AuditType.fromMap(e)).toList();
-  }
-
-  /// Igual a [getTypes] mas persiste o resultado em cache e usa o cache
-  /// quando a chamada de rede falha (suporte a modo offline).
-  Future<List<AuditType>> getTypesCached({String? companyId}) async {
-    final prefs = await SharedPreferences.getInstance();
-    final cacheKey = _typesKey(companyId);
-    try {
-      final types = await getTypes(companyId: companyId);
-      // Grava cache após fetch bem-sucedido
-      final encoded = jsonEncode(types.map((t) => _auditTypeToMap(t)).toList());
-      await prefs.setString(cacheKey, encoded);
-      return types;
-    } catch (_) {
-      // Rede indisponível — tenta ler o cache
-      final cached = prefs.getString(cacheKey);
-      if (cached != null) {
-        final list = jsonDecode(cached) as List;
-        return list.map((e) => AuditType.fromMap(e as Map<String, dynamic>)).toList();
-      }
-      rethrow; // sem cache disponível — propaga o erro
-    }
   }
 
   Future<AuditType> createType({
@@ -101,35 +67,6 @@ class AuditTemplateService {
 
     final data = await query.order('name');
     return (data as List).map((e) => AuditTemplate.fromMap(e)).toList();
-  }
-
-  /// Igual a [getTemplates] mas persiste o resultado em cache e usa o cache
-  /// quando a chamada de rede falha (suporte a modo offline).
-  Future<List<AuditTemplate>> getTemplatesCached({
-    required String typeId,
-    String? companyId,
-  }) async {
-    final prefs = await SharedPreferences.getInstance();
-    final cacheKey = _templatesKey(typeId, companyId);
-    try {
-      final templates = await getTemplates(typeId: typeId, companyId: companyId);
-      // Grava cache após fetch bem-sucedido
-      final encoded = jsonEncode(
-        templates.map((t) => _auditTemplateToMap(t)).toList(),
-      );
-      await prefs.setString(cacheKey, encoded);
-      return templates;
-    } catch (_) {
-      // Rede indisponível — tenta ler o cache
-      final cached = prefs.getString(cacheKey);
-      if (cached != null) {
-        final list = jsonDecode(cached) as List;
-        return list
-            .map((e) => AuditTemplate.fromMap(e as Map<String, dynamic>))
-            .toList();
-      }
-      rethrow; // sem cache disponível — propaga o erro
-    }
   }
 
   Future<List<AuditTemplate>> getAllTemplates({String? companyId}) async {
@@ -266,32 +203,4 @@ class AuditTemplateService {
   Future<void> deleteItem(String id) async {
     await _client.from('template_items').delete().eq('id', id);
   }
-
-  // ── Helpers de serialização para cache ─────────────
-  //
-  // AuditType e AuditTemplate não expõem toMap(), então reconstruímos os
-  // mapas inline a partir dos campos públicos do modelo.
-
-  Map<String, dynamic> _auditTypeToMap(AuditType t) => {
-    'id': t.id,
-    'name': t.name,
-    'icon': t.icon,
-    'color': t.color,
-    'company_id': t.companyId,
-    'active': true,
-  };
-
-  Map<String, dynamic> _auditTemplateToMap(AuditTemplate t) => {
-    'id': t.id,
-    'type_id': t.typeId,
-    'name': t.name,
-    'description': t.description,
-    'company_id': t.companyId,
-    'active': t.active,
-    // Simula o join audit_types(name, icon) que AuditTemplate.fromMap espera
-    'audit_types': {
-      'name': t.typeName,
-      'icon': t.typeIcon,
-    },
-  };
 }

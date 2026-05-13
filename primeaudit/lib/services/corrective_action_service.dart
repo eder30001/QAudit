@@ -1,62 +1,10 @@
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/corrective_action.dart';
 import '../core/app_roles.dart';
-import 'sync_service.dart';
 
 // Sem try/catch dentro do service — callers (screens) são responsáveis pelo tratamento de erros.
 class CorrectiveActionService {
   final _client = Supabase.instance.client;
-
-  /// Variante com fallback offline. Mantém filtros server-side quando conectado;
-  /// offline aplica os mesmos filtros em memória sobre o cache do SyncService.
-  Future<List<CorrectiveAction>> getActionsCached({
-    required String? companyId,
-    String? statusFilter,
-    String? responsibleFilter,
-  }) async {
-    try {
-      return await getActions(
-        companyId: companyId,
-        statusFilter: statusFilter,
-        responsibleFilter: responsibleFilter,
-      );
-    } catch (_) {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(SyncService.correctiveActionsKey(companyId));
-      if (raw != null) {
-        var list = (jsonDecode(raw) as List)
-            .map((e) => CorrectiveAction.fromMap(e as Map<String, dynamic>))
-            .toList();
-        if (statusFilter != null) {
-          list = list.where((a) => a.status.dbValue == statusFilter).toList();
-        }
-        if (responsibleFilter != null) {
-          list = list.where((a) => a.responsibleUserId == responsibleFilter).toList();
-        }
-        return list;
-      }
-      rethrow;
-    }
-  }
-
-  /// Variante com fallback offline para contagem de ações abertas.
-  Future<int> getOpenActionsCountCached(String? companyId) async {
-    try {
-      return await getOpenActionsCount(companyId);
-    } catch (_) {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(SyncService.correctiveActionsKey(companyId));
-      if (raw != null) {
-        const open = ['aberta', 'em_andamento', 'em_avaliacao', 'em_analise', 'reaberta'];
-        return (jsonDecode(raw) as List)
-            .where((e) => open.contains(e['status']))
-            .length;
-      }
-      return 0;
-    }
-  }
 
   Future<List<CorrectiveAction>> getActions({
     required String? companyId,
