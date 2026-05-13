@@ -1,5 +1,8 @@
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/checklist_template.dart';
+import 'sync_service.dart';
 
 /// Serviço de CRUD para templates de checklist.
 ///
@@ -23,6 +26,22 @@ class ChecklistTemplateService {
         .eq('category', category)
         .order('name');
     return (data as List).map((e) => ChecklistTemplate.fromMap(e)).toList();
+  }
+
+  /// Variante com fallback offline usando cache do SyncService.
+  Future<List<ChecklistTemplate>> getAllCached() async {
+    try {
+      return await getAll();
+    } catch (_) {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(SyncService.checklistTemplatesKey());
+      if (raw != null) {
+        return (jsonDecode(raw) as List)
+            .map((e) => ChecklistTemplate.fromMap(e as Map<String, dynamic>))
+            .toList();
+      }
+      rethrow;
+    }
   }
 
   /// Retorna todos os templates visíveis ao usuário (seeds + próprios).

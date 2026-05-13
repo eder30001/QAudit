@@ -1,5 +1,8 @@
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/perimeter.dart';
+import 'sync_service.dart';
 
 /// CRUD de perímetros de uma empresa.
 ///
@@ -7,6 +10,21 @@ import '../models/perimeter.dart';
 /// da lista plana retornada pelo banco.
 class PerimeterService {
   final _client = Supabase.instance.client;
+
+  Future<List<Perimeter>> getByCompanyCached(String companyId) async {
+    try {
+      return await getByCompany(companyId);
+    } catch (_) {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(SyncService.perimetersKey(companyId));
+      if (raw != null) {
+        return (jsonDecode(raw) as List)
+            .map((e) => Perimeter.fromMap(e as Map<String, dynamic>))
+            .toList();
+      }
+      rethrow;
+    }
+  }
 
   Future<List<Perimeter>> getByCompany(String companyId) async {
     final data = await _client

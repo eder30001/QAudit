@@ -1,5 +1,8 @@
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/audit.dart';
+import 'sync_service.dart';
 
 /// CRUD de auditorias (tabela `audits`).
 ///
@@ -26,6 +29,23 @@ class AuditService {
     perimeters(name),
     auditor:profiles!auditor_id(full_name)
   ''';
+
+  /// Variante com fallback de cache offline. Tenta rede primeiro; se falhar,
+  /// lê do cache gravado pelo SyncService. Rethrows se não houver cache.
+  Future<List<Audit>> getAuditsCached({String? companyId}) async {
+    try {
+      return await getAudits(companyId: companyId);
+    } catch (_) {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(SyncService.auditsKey(companyId));
+      if (raw != null) {
+        return (jsonDecode(raw) as List)
+            .map((e) => Audit.fromMap(e as Map<String, dynamic>))
+            .toList();
+      }
+      rethrow;
+    }
+  }
 
   /// Retorna todas as auditorias da empresa informada, ordenadas pela mais recente.
   /// Se [companyId] for null, retorna todas (uso restrito a superuser/dev).
