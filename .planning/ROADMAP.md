@@ -106,7 +106,12 @@ Archive: [.planning/milestones/v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.md)
   3. O usuário é criado com role `adm` e vinculado à empresa recém-criada automaticamente
   4. O fluxo de cadastro de usuário que JÁ encontra empresa pelo CNPJ continua funcionando sem alteração
   5. Migration idempotente adiciona colunas `status`, `trial_expires_at` e `license_expires_at` à tabela `companies`
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 21-01-PLAN.md — DB migration: colunas de billing + RPC SECURITY DEFINER + trigger role clamping
+- [ ] 21-02-PLAN.md — Model + services: Company fields, CompanyService.createForRegistration, AuthService role param
+- [ ] 21-03-PLAN.md — RegisterScreen UI: branch "Criar minha empresa" quando CNPJ não encontrado
 
 ### Phase 22: Asaas Billing Integration
 **Goal**: Ao fim do trial de 30 dias, a empresa recebe cobrança automática via Asaas e o acesso ao app é suspenso se o pagamento não for realizado
@@ -159,7 +164,7 @@ Archive: [.planning/milestones/v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.md)
 | 18. Firebase Infrastructure | v1.3 | 0/? | Not started | — |
 | 19. Token Registration | v1.3 | 0/? | Not started | — |
 | 20. Backend Triggers + Push Dispatch | v1.3 | 0/? | Not started | — |
-| 21. Company Self-Registration | v1.3 | 0/? | Not started | — |
+| 21. Company Self-Registration | v1.3 | 0/3 | In progress | — |
 | 22. Asaas Billing Integration | v1.3 | 0/? | Not started | — |
 | 23. Invite Users by Email | v1.3 | 0/? | Not started | — |
 
