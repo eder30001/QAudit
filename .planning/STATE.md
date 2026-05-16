@@ -5,7 +5,7 @@ milestone_name: Notificações
 status: active
 stopped_at: ""
 last_updated: "2026-05-13T21:00:00Z"
-last_activity: 2026-05-13
+last_activity: 2026-05-15
 ---
 
 # Project State
@@ -16,6 +16,11 @@ See: .planning/PROJECT.md (updated 2026-05-13)
 
 **Core value:** Nenhum dado de auditoria preenchido em campo deve ser perdido — save silencioso ou falha de rede não pode comprometer o trabalho do auditor.
 **Current focus:** v1.3 Notificações — Phase 18: Firebase Infrastructure
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
 
 ## Current Position
 
