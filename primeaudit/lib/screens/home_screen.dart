@@ -16,7 +16,7 @@ import 'corrective_actions_screen.dart';
 import '../services/corrective_action_service.dart';
 import 'login_screen.dart';
 import 'profile_screen.dart';
-import 'templates/audit_types_screen.dart';
+import 'templates/models_screen.dart';
 import 'settings_screen.dart';
 import 'checklist/checklists_screen.dart';
 
@@ -347,9 +347,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 if (AppRole.canAccessAdmin(_role))
                   _drawerItem(
-                    icon: Icons.assignment_rounded,
-                    title: 'Templates de Auditoria',
-                    onTap: () => _navigate(const AuditTypesScreen()),
+                    icon: Icons.folder_copy_rounded,
+                    title: 'Modelos',
+                    onTap: () => _navigate(const ModelsScreen()),
                   ),
                 if (CompanyContextService.instance.hasModule('auditoria'))
                   _drawerItem(
